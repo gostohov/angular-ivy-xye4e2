@@ -123,6 +123,10 @@
           }
         }
       }
-    }},
-  "defaultProject": "youdev"
+    }
+  },
+  "defaultProject": "youdev",
+  "cli": {
+    "analytics": false
+  }
 }

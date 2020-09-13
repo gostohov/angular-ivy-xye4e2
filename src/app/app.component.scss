@@ -1,0 +1,30 @@
+.container {
+  display: grid;
+  height: 100%;
+  width: 100%;
+
+  button {
+    place-self: center;
+    padding: 10px 6px;
+    border-radius: 2px;
+    border: none;
+    background-color: mediumpurple;
+    font-family: Arial, Helvetica, sans-serif;
+    color: #fff;
+    cursor: pointer;
+
+    &:hover {
+      background-color: mediumslateblue;
+    }
+  }
+}
+
+::ng-deep .cdk-overlay-container {
+  app-super-tooltip {
+    .tooltip-info {
+      background-color: orange;
+      color: white;
+      padding: 20px;
+    }
+  }
+}
