@@ -1,9 +1,8 @@
-import { Directive, OnInit, ElementRef, Input, TemplateRef, HostListener, ComponentRef, ViewContainerRef, ComponentFactory, ComponentFactoryResolver, Renderer2 } from '@angular/core';
+import { Directive, OnInit, ElementRef, Input, TemplateRef, ComponentRef, Renderer2 } from '@angular/core';
 import { OverlayRef, Overlay, OverlayPositionBuilder, ConnectedPosition } from '@angular/cdk/overlay';
 import { ComponentPortal } from '@angular/cdk/portal';
 import { SuperTooltipComponent } from '../components/super-tooltip/super-tooltip.component';
 
-export type TooltipTrigger = 'click' | 'hover';
 @Directive({
     selector: '[superTooltip]'
 })
@@ -18,20 +17,15 @@ export class SuperTooltipDirective implements OnInit {
         overlayX: 'center',
         overlayY: 'top',
     }];
+
     /**
      * Содержимое tooltip портала
      */
     @Input('tooltipContent')
     tooltipContent: TemplateRef<any>;
-    /**
-     * Триггер для рендера компонента
-     */
-    @Input('trigger')
-    tooltipTrigger: TooltipTrigger;
 
     private overlayRef: OverlayRef;
     private tooltipRef: ComponentRef<SuperTooltipComponent>;
-    private readonly triggerDisposables: Array<() => void> = [];
     private visible: boolean;
 
     constructor(
@@ -50,44 +44,11 @@ export class SuperTooltipDirective implements OnInit {
 
         // Присваиваем стратегию позиционирования
         this.overlayRef = this.overlay.create({ positionStrategy });
-        this.registerTriggers();
-    }
 
-    private registerTriggers(): void {
+        // Регестрируем колбеки на DOM-события
         const el = this.elementRef.nativeElement;
-        const trigger = this.tooltipTrigger;
-
-        this.removeTriggerListeners();
-
-        if (trigger === 'hover') {
-            this.triggerDisposables.push(...[
-                this.renderer.listen(el, 'mouseenter', () => this.show()),
-                this.renderer.listen(el, 'mouseout', () => this.hide())
-            ]);
-        } else if (trigger === 'click') {
-            this.triggerDisposables.push(
-                this.renderer.listen(window, 'click', (e) => {
-                    e.preventDefault();
-                    const isClickInsideTooltipContent = this.clickInsideTooltipContent(e.target);
-                    const isClickInsideHost = this.clickInsideHost(e.target);
-
-                    if (this.visible && !isClickInsideTooltipContent && !isClickInsideHost) {
-                        this.hide();
-                        return;
-                    } else if (!this.visible && isClickInsideHost) {
-                        this.show();
-                        return;
-                    } else {
-                        return;
-                    }
-                })
-            );
-        }
-    }
-
-    private removeTriggerListeners(): void {
-        this.triggerDisposables.forEach(dispose => dispose());
-        this.triggerDisposables.length = 0;
+        this.renderer.listen(el, 'mouseenter', () => this.show()),
+        this.renderer.listen(el, 'mouseout', () => this.hide())
     }
 
     private show(): void {
@@ -112,13 +73,5 @@ export class SuperTooltipDirective implements OnInit {
         this.tooltipRef.destroy();
         this.overlayRef.detach();
         this.visible = false;
-    }
-
-    private clickInsideHost(target: HTMLElement): boolean {
-        return this.elementRef.nativeElement.contains(target);
-    }
-
-    private clickInsideTooltipContent(target: HTMLElement): boolean {
-        return this.tooltipRef?.location.nativeElement.contains(target);
     }
 }
